@@ -15,7 +15,7 @@ public class Targets : Generatable
 {
 
     public int pointValue;
-    public bool isElectric;
+    //TODO: What is isBurned supposed to mean?
     public bool isBurned;
     public ColorCode colorCode;
     Vector3 startLocation;
@@ -32,19 +32,24 @@ public class Targets : Generatable
         mRenderer = GetComponent<MeshRenderer>();
         Color targetColor;
         float randomFloat = Random.Range(0.0f, 1.0f);
-        if(randomFloat <= 0.24f) {
-            colorCode = ColorCode.RED;
-        } else if(randomFloat <= 0.48f) {
-            colorCode = ColorCode.BLUE;
-        } else if(randomFloat <= 0.72f) {
-            colorCode = ColorCode.GREEN;
-        } else if (randomFloat <= 0.96f) {
-            colorCode = ColorCode.MAGENTA;
-        } else {
+        //Chance of color based on GameManager
+        if (randomFloat <= GameManager.Instance.levelInfo.goalTargetSpawnChance) {
+            colorCode = GameManager.Instance.levelInfo.targetColor;
+        } else if (randomFloat <= (1-GameManager.Instance.levelInfo.goalTargetSpawnChance)/3 + GameManager.Instance.levelInfo.goalTargetSpawnChance){
+            colorCode = (ColorCode)((int)(GameManager.Instance.levelInfo.targetColor + 1) % (int)(ColorCode.BLACK));
+        } else if (randomFloat <= ((1 - GameManager.Instance.levelInfo.goalTargetSpawnChance) * 2) / 3 + GameManager.Instance.levelInfo.goalTargetSpawnChance) {
+            colorCode = (ColorCode)((int)(GameManager.Instance.levelInfo.targetColor + 2) % (int)(ColorCode.BLACK));
+        } else if (randomFloat <= (1 - GameManager.Instance.levelInfo.goalTargetSpawnChance) + GameManager.Instance.levelInfo.goalTargetSpawnChance) {
+            colorCode = (ColorCode)((int)(GameManager.Instance.levelInfo.targetColor + 3) % (int)(ColorCode.BLACK));
+        }
+
+        randomFloat = Random.Range(0.0f, 1.0f);
+        //Doing Black chance separately
+        if (randomFloat <= 0.02f) {
             colorCode = ColorCode.BLACK;
         }
 
-        switch(colorCode)
+        switch (colorCode)
         {
             case ColorCode.RED:
                 targetColor = Color.red;

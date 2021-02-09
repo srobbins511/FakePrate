@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum ColorCode
-{
+public enum ColorCode {
     RED,
     BLUE,
     GREEN,
@@ -11,8 +10,7 @@ public enum ColorCode
     BLACK
 };
 
-public class Targets : Generatable
-{
+public class Targets : Generatable {
 
     public int pointValue;
     //TODO: What is isBurned supposed to mean?
@@ -26,8 +24,7 @@ public class Targets : Generatable
     private bool isPaused;
 
     // Start is called before the first frame update
-    void Start()
-    {
+    void Start() {
         rBody = GetComponent<Rigidbody>();
         mRenderer = GetComponent<MeshRenderer>();
         Color targetColor;
@@ -49,8 +46,7 @@ public class Targets : Generatable
             colorCode = ColorCode.BLACK;
         }
 
-        switch (colorCode)
-        {
+        switch (colorCode) {
             case ColorCode.RED:
                 targetColor = Color.red;
                 break;
@@ -80,8 +76,7 @@ public class Targets : Generatable
     /// <summary>
     /// This Method is used to allow the player to click on Targets
     /// </summary>
-    public void OnMouseDown()
-    {
+    public void OnMouseDown() {
         if(!isPaused) {
             if(colorCode == ColorCode.BLACK) {
                 GameManager.Instance.BlowUpEverything();
@@ -92,55 +87,44 @@ public class Targets : Generatable
     }
 
     public void SelfDestruct() {
-        GameManager.Instance.Score(pointValue, GameManager.Instance.levelInfo.targetColor);  //TODO: Not yet implemented
-        //throw new System.NotImplementedException();
+        GameManager.Instance.Score(pointValue, GameManager.Instance.levelInfo.targetColor);
         GameManager.Instance.DestroyAllTargets -= SelfDestruct;
         GameManager.Instance.OnGamePause -= PauseTarget;
         GameManager.Instance.OnGameUnpause -= UnpauseTarget;
         Destroy(gameObject);
     }
 
-    public override void Activate()
-    {
-        GameManager.Instance.Score(pointValue, colorCode);  //TODO: Not yet implemented
-                                                            //throw new System.NotImplementedException();
+    public override void Activate() {
+        GameManager.Instance.Score(pointValue, colorCode); 
         GameManager.Instance.DestroyAllTargets -= SelfDestruct;
         GameManager.Instance.OnGamePause -= PauseTarget;
         GameManager.Instance.OnGameUnpause -= UnpauseTarget;
         Destroy(gameObject);
     }
 
-    public override void Generate()
-    {
+    public override void Generate() {
+        //TODO: Move trajectory/location randomization to spawnfactory
         startLocation = new Vector3(Random.Range(-10f, 10f),-1f,0f);
         transform.position = startLocation;
         yBound = Random.Range(0.5f, 1.5f);
         xDirection = Random.Range(-6f, 6f);
         xDirection = xDirection + startLocation.x;
-        if(xDirection < -9)
-        {
+        if(xDirection < -9) {
             xDirection = -9;
         }
-        else if(xDirection > 9)
-        {
+        else if(xDirection > 9) {
             xDirection = 9;
         }
 
         speed.x = (xDirection - startLocation.x)/10;
         StartCoroutine(LerpTo(-speed.y));
-        //speed.x = Vector3.Normalize(speed).x;
-        //throw new System.NotImplementedException();
     }
 
     
     // Update is called once per frame
-    void Update()
-    {
-
-        if(transform.position.y > yBound && !isGoingDown)
-        {
+    void Update() {
+        if(transform.position.y > yBound && !isGoingDown) {
             isGoingDown = true;
-            
         }
         if(!isPaused) {
             transform.position = new Vector3(transform.position.x + speed.x * Time.deltaTime, transform.position.y + 2 * speed.y * Time.deltaTime);
@@ -160,12 +144,10 @@ public class Targets : Generatable
     /// </summary>
     /// <param name="targetSpeed"></param>
     /// <returns></returns>
-    IEnumerator LerpTo(float targetSpeed)
-    {
+    IEnumerator LerpTo(float targetSpeed) {
         float t = 0;
         targetSpeed = -Mathf.Pow(targetSpeed, 2);
-        while(t < 1)
-        {   
+        while(t < 1) {   
             if(!isPaused) {
                 speed.y = Mathf.LerpUnclamped(speed.y, targetSpeed, t / yBound);
                 t += 0.0001f;
@@ -175,8 +157,7 @@ public class Targets : Generatable
         speed.y = targetSpeed;
     }
 
-    public void OnBecameInvisible()
-    {
+    public void OnBecameInvisible() {
         GameManager.Instance.DestroyAllTargets -= SelfDestruct;
         GameManager.Instance.OnGamePause -= PauseTarget;
         GameManager.Instance.OnGameUnpause -= UnpauseTarget;

@@ -33,7 +33,7 @@ public class GameManager : MonoBehaviour {
         } else {
             Destroy(this);
         }
-        setLevelInfo(new LevelInfo(1, 0, 1f, 0.8f, 5, 15, new List<float>(), new List<float>(), ColorCode.RED, 10));
+        setLevelInfo(new LevelInfo(1, 0, 1f, 0.8f, 5.0f, 2, 5, ColorCode.RED, 10));
         Factory = gameObject.AddComponent<SpawnFactory>();
         StartCoroutine(SpawnTimer());
     }
@@ -62,9 +62,7 @@ public class GameManager : MonoBehaviour {
     /// </summary>
     /// <returns></returns>
     IEnumerator SpawnTimer() {
-        float timeSinceTargetSpawnBurst = 0;
-        int targetSpawnBurstIndexPos = 0;
-        int attackSpawnIndexPos = 0;
+        float timeSinceTargetSpawnBurst = GameManager.Instance.levelInfo.timeBetweenBursts - 1;
         float timeSinceAttackSpawn = 0;
         while (true) {
             if(isPaused) {
@@ -72,11 +70,9 @@ public class GameManager : MonoBehaviour {
             }
 
             //Spawns bursts of targets utilizing SpawnFactory
-            //TODO: Replace this with a reference to GameManager's reference of time between bursts
-            if(timeSinceTargetSpawnBurst > 2f)
+            if(timeSinceTargetSpawnBurst > GameManager.Instance.levelInfo.timeBetweenBursts)
             {
-                //TODO: Replace this with gameManager references, and probably swap Burst size for upper/lower bounds
-                Factory.SpawnTargetBurst(Random.Range(5,15));
+                Factory.SpawnTargetBurst(Random.Range(levelInfo.targetSpawnMin,levelInfo.targetSpawnMax));
                 timeSinceTargetSpawnBurst = 0;
             }
 
@@ -101,17 +97,21 @@ public class GameManager : MonoBehaviour {
         } else {
             totalScore -= (int)(pointValue * levelInfo.scoreMultiplier);
         }
-        scoreText.text = "Current Score: " + totalScore + "\nCurrent Level: " + levelInfo.currentLevel + "\nTargets to next Level: " + levelInfo.numTargetsToWin;
         if(levelInfo.numTargetsToWin <= 0) {
             //TODO: Stop this from being a mess
             ColorCode nextColor = (ColorCode)((int)(levelInfo.targetColor + 1)%4);
             int nextLevel = levelInfo.currentLevel + 1;
             float nextScoreMult = levelInfo.scoreMultiplier + 0.1f;
+            float nextTimeBetweenBursts = levelInfo.timeBetweenBursts - 0.25f;
+            nextTimeBetweenBursts = (nextTimeBetweenBursts <= 1.0f) ? 1.0f : nextTimeBetweenBursts;
+            int nextTargetSpawnMin = (levelInfo.targetSpawnMin >= 11) ? 11 : levelInfo.targetSpawnMin + 1;
+            int nextTargetSpawnMax = (levelInfo.targetSpawnMax >= 15) ? 15 : levelInfo.targetSpawnMax + 1;
             //TODO: Use a better formula for nextColorSpawnChance
             float nextLevelColorSpawnChance = Mathf.Lerp(levelInfo.goalTargetSpawnChance, 0.4f, 0.5f); //Lerps towards 0.4f spawn chance
-            LevelInfo nextLevelInfo = new LevelInfo(nextLevel, 0, nextScoreMult, nextLevelColorSpawnChance, 5, 15, new List<float>(), new List<float>(), nextColor, 10);
+            LevelInfo nextLevelInfo = new LevelInfo(nextLevel, 0, nextScoreMult, nextLevelColorSpawnChance, nextTimeBetweenBursts, nextTargetSpawnMin, nextTargetSpawnMax, nextColor, 10);
             setLevelInfo(nextLevelInfo);
         }
+        scoreText.text = "Current Score: " + totalScore + "\nCurrent Level: " + levelInfo.currentLevel + "\nTargets to next Level: " + levelInfo.numTargetsToWin;
     }
 
     void setLevelInfo(LevelInfo levelInfo) {
@@ -145,24 +145,24 @@ public struct LevelInfo {
     public int currentLevel;
     public int currentScore;
     public float scoreMultiplier;
-    public int targetSpawnBurstSize;
+    public float timeBetweenBursts;
+    public int targetSpawnMin;
+    public int targetSpawnMax;
     public float goalTargetSpawnChance;
-    public List<float> TargetSpawnTimes;
-    public List<float> AttackSpawnTimes;
     public ColorCode targetColor;
     public float numTargetsToWin;
 
     //TODO: Evaluate whether or not the Lists of floats are really necessary.  Remove them if not
     //TODO: Evaluate whether or not currentScore is required.  If not remove it
-    public LevelInfo(int curLevel, int curScore, float scoreMult, float tarSpawnChance, int spawnSizeLowBound, int spawnSizeUpperBound, List<float> tarSpawnTimes, List<float> attackSpawnTimes, ColorCode targetColor, float numTargetsToWin)
+    public LevelInfo(int curLevel, int curScore, float scoreMult, float tarSpawnChance, float timeBetweenBursts, int spawnSizeLowBound, int spawnSizeUpperBound, ColorCode targetColor, float numTargetsToWin)
     {
         this.currentLevel = curLevel;
         this.currentScore = curScore;
         this.scoreMultiplier = scoreMult;
         this.goalTargetSpawnChance = tarSpawnChance;
-        this.targetSpawnBurstSize = Random.Range(spawnSizeLowBound, spawnSizeUpperBound);
-        this.TargetSpawnTimes = tarSpawnTimes;
-        this.AttackSpawnTimes = attackSpawnTimes;
+        this.timeBetweenBursts = timeBetweenBursts;
+        this.targetSpawnMin = spawnSizeLowBound;
+        this.targetSpawnMax = spawnSizeUpperBound;
         this.targetColor = targetColor;
         this.numTargetsToWin = numTargetsToWin;
     }

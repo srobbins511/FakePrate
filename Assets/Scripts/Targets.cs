@@ -103,7 +103,7 @@ public class Targets : Generatable {
     }
 
     public override void Generate() {
-        //TODO: Move trajectory/location randomization to spawnfactory
+        //TODO: Move trajectory/location randomization to spawnfactory.  Make speed adjustable as a float without breaking everything
         startLocation = new Vector3(Random.Range(-10f, 10f),-1f,0f);
         transform.position = startLocation;
         yBound = Random.Range(0.5f, 1.5f);

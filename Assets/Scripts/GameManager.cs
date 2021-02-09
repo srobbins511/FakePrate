@@ -88,6 +88,10 @@ public class GameManager : MonoBehaviour {
         if(Input.GetKeyDown(KeyCode.P)) {
             Pause();
         }
+        if(Input.GetKeyDown(KeyCode.D)) {
+            //Debug to get to higher levels easier.
+            BlowUpEverything();
+        }
     }
 
     public void Score(float pointValue, ColorCode colorCode) {

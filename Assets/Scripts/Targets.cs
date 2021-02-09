@@ -7,7 +7,8 @@ public enum ColorCode
     RED,
     BLUE,
     GREEN,
-    MAGENTA
+    MAGENTA,
+    BLACK
 };
 
 public class Targets : Generatable
@@ -22,6 +23,7 @@ public class Targets : Generatable
     public float xDirection;
 
     private bool isGoingDown;
+    private bool isPaused;
 
     // Start is called before the first frame update
     void Start()
@@ -29,6 +31,19 @@ public class Targets : Generatable
         rBody = GetComponent<Rigidbody>();
         mRenderer = GetComponent<MeshRenderer>();
         Color targetColor;
+        float randomFloat = Random.Range(0.0f, 1.0f);
+        if(randomFloat <= 0.24f) {
+            colorCode = ColorCode.RED;
+        } else if(randomFloat <= 0.48f) {
+            colorCode = ColorCode.BLUE;
+        } else if(randomFloat <= 0.72f) {
+            colorCode = ColorCode.GREEN;
+        } else if (randomFloat <= 0.96f) {
+            colorCode = ColorCode.MAGENTA;
+        } else {
+            colorCode = ColorCode.BLACK;
+        }
+
         switch(colorCode)
         {
             case ColorCode.RED:
@@ -43,13 +58,18 @@ public class Targets : Generatable
             case ColorCode.MAGENTA:
                 targetColor = Color.magenta;
                 break;
+            case ColorCode.BLACK:
+                targetColor = Color.black;
+                break;
             default:
                 targetColor = Color.white;
                 break;
         }
         mRenderer.material.SetColor("_Color", targetColor); //TODO: FIX because Doesn't work
         Generate();
-
+        GameManager.Instance.OnGamePause += PauseTarget;
+        GameManager.Instance.OnGameUnpause += UnpauseTarget;
+        GameManager.Instance.DestroyAllTargets += SelfDestruct;
     }
 
     /// <summary>
@@ -57,25 +77,39 @@ public class Targets : Generatable
     /// </summary>
     public void OnMouseDown()
     {
-        Activate();
+        if(!isPaused) {
+            if(colorCode == ColorCode.BLACK) {
+                GameManager.Instance.BlowUpEverything();
+            } else {
+                Activate();
+            }
+        }
+    }
+
+    public void SelfDestruct() {
+        GameManager.Instance.Score(pointValue, GameManager.Instance.levelInfo.targetColor);  //TODO: Not yet implemented
+        //throw new System.NotImplementedException();
+        GameManager.Instance.DestroyAllTargets -= SelfDestruct;
+        GameManager.Instance.OnGamePause -= PauseTarget;
+        GameManager.Instance.OnGameUnpause -= UnpauseTarget;
+        Destroy(gameObject);
     }
 
     public override void Activate()
     {
-        Debug.Log("Clicked");
-        GameManager.Instance.Score(pointValue);  //TODO: Not yet implemented
-        //throw new System.NotImplementedException();
+        GameManager.Instance.Score(pointValue, colorCode);  //TODO: Not yet implemented
+                                                            //throw new System.NotImplementedException();
+        GameManager.Instance.DestroyAllTargets -= SelfDestruct;
+        GameManager.Instance.OnGamePause -= PauseTarget;
+        GameManager.Instance.OnGameUnpause -= UnpauseTarget;
         Destroy(gameObject);
     }
 
     public override void Generate()
     {
-        //TODO: Spawn -10 to 10 x, negative y, 0 z, and start movement upwards
-        //NOTE: Prototype movement to just be go up and down in y
-
         startLocation = new Vector3(Random.Range(-10f, 10f),-1f,0f);
         transform.position = startLocation;
-        yBound = Random.Range(2f, 5f);
+        yBound = Random.Range(0.5f, 1.5f);
         xDirection = Random.Range(-6f, 6f);
         xDirection = xDirection + startLocation.x;
         if(xDirection < -9)
@@ -103,9 +137,17 @@ public class Targets : Generatable
             isGoingDown = true;
             
         }
-        
-        
-        transform.position = new Vector3(transform.position.x + speed.x*Time.deltaTime, transform.position.y + speed.y * Time.deltaTime);
+        if(!isPaused) {
+            transform.position = new Vector3(transform.position.x + speed.x * Time.deltaTime, transform.position.y + 2 * speed.y * Time.deltaTime);
+        }
+    }
+
+    void PauseTarget() {
+        isPaused = true;
+    }
+
+    void UnpauseTarget() {
+        isPaused = false;
     }
 
     /// <summary>
@@ -118,9 +160,11 @@ public class Targets : Generatable
         float t = 0;
         targetSpeed = -Mathf.Pow(targetSpeed, 2);
         while(t < 1)
-        {
-            speed.y = Mathf.LerpUnclamped(speed.y, targetSpeed, t/yBound);
-            t += 0.0001f;
+        {   
+            if(!isPaused) {
+                speed.y = Mathf.LerpUnclamped(speed.y, targetSpeed, t / yBound);
+                t += 0.0001f;
+            }
             yield return new WaitForFixedUpdate();
         }
         speed.y = targetSpeed;
@@ -128,6 +172,9 @@ public class Targets : Generatable
 
     public void OnBecameInvisible()
     {
+        GameManager.Instance.DestroyAllTargets -= SelfDestruct;
+        GameManager.Instance.OnGamePause -= PauseTarget;
+        GameManager.Instance.OnGameUnpause -= UnpauseTarget;
         Destroy(this.gameObject);
     }
 }

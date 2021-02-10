@@ -23,6 +23,9 @@ public class Targets : Generatable {
     private bool isGoingDown;
     private bool isPaused;
 
+    public float SpeedVariance;
+    public float SpeedConstant;
+
     // Start is called before the first frame update
     void Start() {
         rBody = GetComponent<Rigidbody>();
@@ -116,18 +119,83 @@ public class Targets : Generatable {
             xDirection = 9;
         }
 
-        speed.x = (xDirection - startLocation.x)/10;
-        StartCoroutine(LerpTo(-speed.y));
+
+        CalculateTrajectoryEquation();
     }
 
     
     // Update is called once per frame
     void Update() {
-        if(transform.position.y > yBound && !isGoingDown) {
-            isGoingDown = true;
+
+    }
+
+    /// <summary>
+    /// This is the method that calculates the constants needed to create the parabolic arc of each target
+    /// It then starts the movement coroutine for the targets
+    /// </summary>
+    void CalculateTrajectoryEquation()
+    {
+        bool isBackwards = Random.Range(0, 2) == 0;
+        float Slope = Random.Range(2f, 5f);
+        float xTranslation = Random.Range(-9f, 9f);
+        float yIntercept = Random.Range(3f, 5f);
+        float xRoot2 = Mathf.Sqrt(yIntercept / Slope) - xTranslation;
+        float xRoot1 = -Mathf.Sqrt(yIntercept / Slope) - xTranslation;
+        StartCoroutine(FollowPath(Slope, xTranslation, yIntercept, xRoot1,xRoot2, isBackwards));
+    }
+
+    /// <summary>
+    /// The movement cooutine of the targets
+    /// 
+    /// It moves a target along a parabolic arc given by the different constants passed in along with a boolean determining which way to follow the arc and what root to start at
+    /// 
+    /// It uses two constants determined by the editor to adjust the movement speed of the target, one will be constant for every target created and one will depend on the x-distance the target
+    /// will have to travel. This will allow targets that have to move in wider arcs to have a little bit of a speed boost in order to make it there in a timely, somewhat unison manner
+    /// </summary>
+    /// <param name="A"></param>
+    /// <param name="B"></param>
+    /// <param name="C"></param>
+    /// <param name="xRoot1"></param>
+    /// <param name="xRoot2"></param>
+    /// <param name="isBackwards"></param>
+    /// <returns></returns>
+    IEnumerator FollowPath(float A, float B, float C, float xRoot1, float xRoot2, bool isBackwards)
+    {
+        bool isFinished = false;
+        if(!isBackwards)
+        {
+            float t = xRoot1;
+            while(!isFinished)
+            {
+               
+                if(!isPaused)
+                {
+                    t += Time.deltaTime*SpeedConstant + Time.deltaTime * Mathf.Sqrt(Mathf.Abs(xRoot1 - xRoot2))*SpeedVariance;
+                    transform.position = new Vector3(t, -A * Mathf.Pow(t + B, 2) + C, 0);
+                }
+                yield return new WaitForEndOfFrame();
+                if (t > xRoot2 + 2)
+                {
+                    isFinished = true;
+                }
+            }
         }
-        if(!isPaused) {
-            transform.position = new Vector3(transform.position.x + speed.x * Time.deltaTime, transform.position.y + 2 * speed.y * Time.deltaTime);
+        else
+        {
+            float t = xRoot2;
+            while (!isFinished)
+            {
+                if (!isPaused)
+                {
+                    t -= Time.deltaTime * SpeedConstant + Time.deltaTime * Mathf.Sqrt(Mathf.Abs(xRoot1 - xRoot2)) * SpeedVariance;
+                    transform.position = new Vector3(t, -A * Mathf.Pow(t + B, 2) + C, 0);
+                }
+                yield return new WaitForEndOfFrame();
+                if (t < xRoot1 - 2)
+                {
+                    isFinished = true;
+                }
+            }
         }
     }
 
@@ -139,23 +207,6 @@ public class Targets : Generatable {
         isPaused = false;
     }
 
-    /// <summary>
-    /// This function lerps the speed of a target in the y direction to its negative mirror, causing the target to fall
-    /// </summary>
-    /// <param name="targetSpeed"></param>
-    /// <returns></returns>
-    IEnumerator LerpTo(float targetSpeed) {
-        float t = 0;
-        targetSpeed = -Mathf.Pow(targetSpeed, 2);
-        while(t < 1) {   
-            if(!isPaused) {
-                speed.y = Mathf.LerpUnclamped(speed.y, targetSpeed, t / yBound);
-                t += 0.0001f;
-            }
-            yield return new WaitForFixedUpdate();
-        }
-        speed.y = targetSpeed;
-    }
 
     public void OnBecameInvisible() {
         GameManager.Instance.DestroyAllTargets -= SelfDestruct;

@@ -24,4 +24,8 @@ public class Attacks : Generatable
     {
         
     }
+
+    public void OnBecameInvisible() {
+        Destroy(this.gameObject);
+    }
 }

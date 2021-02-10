@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Dragon : MonoBehaviour
+public class Dragon : Attacks
 {
     // Start is called before the first frame update
     void Start()
@@ -13,6 +13,6 @@ public class Dragon : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        transform.position = transform.position + new Vector3(-1f, 0f, 0f) * Vector3.Magnitude(speed) * Time.deltaTime;
     }
 }

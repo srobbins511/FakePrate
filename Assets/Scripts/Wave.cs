@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Wave : MonoBehaviour
+public class Wave : Attacks
 {
     // Start is called before the first frame update
     void Start()
@@ -13,6 +13,6 @@ public class Wave : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        transform.position = transform.position + new Vector3(1f, 0f, 0f) * Vector3.Magnitude(speed) * Time.deltaTime;
     }
 }

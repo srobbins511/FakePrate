@@ -4,13 +4,15 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour {
-    public int lives;
+    public int lives = 3;
     public bool isPaused;
     int totalScore;
     Coroutine spawnTimer;
 
     public delegate void SimpleEventHandler();
     public GameObject TargetPrefab;
+    public GameObject DragonPrefab;
+    public GameObject WavePrefab;
     public Text scoreText;
     public Image targetColorImage;
 
@@ -33,9 +35,10 @@ public class GameManager : MonoBehaviour {
         } else {
             Destroy(this);
         }
-        setLevelInfo(new LevelInfo(1, 0, 1f, 0.8f, 5.0f, 2, 5, ColorCode.RED, 10));
+        setLevelInfo(new LevelInfo(1, 0, 1f, 0.8f, 5.0f, 2, 5, ColorCode.RED, 10, 5f));
         Factory = gameObject.AddComponent<SpawnFactory>();
         StartCoroutine(SpawnTimer());
+        scoreText.text = "Current Score: " + totalScore + "\tCurrent Level: " + levelInfo.currentLevel + "\nTargets to next Level: " + levelInfo.numTargetsToWin + "\tLives: " + lives;
     }
 
 
@@ -76,6 +79,12 @@ public class GameManager : MonoBehaviour {
                 timeSinceTargetSpawnBurst = 0;
             }
 
+            //Spawn attack utilizing SpawnFactory
+            if(timeSinceAttackSpawn > GameManager.Instance.levelInfo.timeBetweenAttacks) {
+                Factory.SpawnAtack();
+                timeSinceAttackSpawn = 0;
+            }
+
             yield return new WaitForEndOfFrame();
             timeSinceAttackSpawn += Time.deltaTime;
             timeSinceTargetSpawnBurst += Time.deltaTime;
@@ -112,10 +121,10 @@ public class GameManager : MonoBehaviour {
             int nextTargetSpawnMax = (levelInfo.targetSpawnMax >= 15) ? 15 : levelInfo.targetSpawnMax + 1;
             //TODO: Use a better formula for nextColorSpawnChance
             float nextLevelColorSpawnChance = Mathf.Lerp(levelInfo.goalTargetSpawnChance, 0.4f, 0.5f); //Lerps towards 0.4f spawn chance
-            LevelInfo nextLevelInfo = new LevelInfo(nextLevel, 0, nextScoreMult, nextLevelColorSpawnChance, nextTimeBetweenBursts, nextTargetSpawnMin, nextTargetSpawnMax, nextColor, 10);
+            LevelInfo nextLevelInfo = new LevelInfo(nextLevel, 0, nextScoreMult, nextLevelColorSpawnChance, nextTimeBetweenBursts, nextTargetSpawnMin, nextTargetSpawnMax, nextColor, 10, 5f);
             setLevelInfo(nextLevelInfo);
         }
-        scoreText.text = "Current Score: " + totalScore + "\nCurrent Level: " + levelInfo.currentLevel + "\nTargets to next Level: " + levelInfo.numTargetsToWin;
+        scoreText.text = "Current Score: " + totalScore + "\tCurrent Level: " + levelInfo.currentLevel + "\nTargets to next Level: " + levelInfo.numTargetsToWin + "\tLives: " + lives;
     }
 
     void setLevelInfo(LevelInfo levelInfo) {
@@ -142,6 +151,11 @@ public class GameManager : MonoBehaviour {
     public void BlowUpEverything() {
         DestroyAllTargets?.Invoke();
     }
+
+    public void loseLife() {
+        lives--;
+        scoreText.text = "Current Score: " + totalScore + "\tCurrent Level: " + levelInfo.currentLevel + "\nTargets to next Level: " + levelInfo.numTargetsToWin + "\tLives: " + lives;
+    }
 }
 
 [System.Serializable]
@@ -155,10 +169,11 @@ public struct LevelInfo {
     public float goalTargetSpawnChance;
     public ColorCode targetColor;
     public float numTargetsToWin;
+    public float timeBetweenAttacks;
 
     //TODO: Evaluate whether or not the Lists of floats are really necessary.  Remove them if not
     //TODO: Evaluate whether or not currentScore is required.  If not remove it
-    public LevelInfo(int curLevel, int curScore, float scoreMult, float tarSpawnChance, float timeBetweenBursts, int spawnSizeLowBound, int spawnSizeUpperBound, ColorCode targetColor, float numTargetsToWin)
+    public LevelInfo(int curLevel, int curScore, float scoreMult, float tarSpawnChance, float timeBetweenBursts, int spawnSizeLowBound, int spawnSizeUpperBound, ColorCode targetColor, float numTargetsToWin, float timeBetweenAttacks)
     {
         this.currentLevel = curLevel;
         this.currentScore = curScore;
@@ -169,5 +184,6 @@ public struct LevelInfo {
         this.targetSpawnMax = spawnSizeUpperBound;
         this.targetColor = targetColor;
         this.numTargetsToWin = numTargetsToWin;
+        this.timeBetweenAttacks = timeBetweenAttacks;
     }
 }

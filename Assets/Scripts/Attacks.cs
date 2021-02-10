@@ -2,8 +2,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Attacks : MonoBehaviour
+public class Attacks : Generatable
 {
+
+    public override void Generate() {
+        throw new System.NotImplementedException();
+    }
+
+    public override void Activate() {
+        throw new System.NotImplementedException();
+    }
+
     // Start is called before the first frame update
     void Start()
     {

@@ -8,10 +8,8 @@ public class SpawnFactory : MonoBehaviour {
 
     public void Start() {
         prefabsToGenerate[0] = GameManager.Instance.TargetPrefab;
-        /*
-        prefabsToGenerate[1] = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        prefabsToGenerate[2] = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        */
+        prefabsToGenerate[1] = GameManager.Instance.DragonPrefab;
+        prefabsToGenerate[2] = GameManager.Instance.WavePrefab;
         //SpawnTargetBurst(GameManager.Instance.levelInfo.targetSpawnBurstSize);
     }
     public void SpawnAtack() {

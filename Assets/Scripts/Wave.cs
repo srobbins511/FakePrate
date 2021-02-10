@@ -15,4 +15,8 @@ public class Wave : Attacks
     {
         transform.position = transform.position + new Vector3(1f, 0f, 0f) * Vector3.Magnitude(speed) * Time.deltaTime;
     }
+
+    public void OnBecameInvisible() {
+        Destroy(this.gameObject);
+    }
 }

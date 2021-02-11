@@ -28,8 +28,13 @@ public class GameManager : MonoBehaviour {
 
     private SpawnFactory Factory;
 
+    private Targets[] TargetPool;
+    private int targetPoolIndex;
+
+    private bool debugfastSpawn;
+
     // Start is called before the first frame update
-    void Start() {
+    void Awake() {
         if(Instance == null) {
             Instance = this;
         } else {
@@ -37,8 +42,12 @@ public class GameManager : MonoBehaviour {
         }
         setLevelInfo(new LevelInfo(1, 0, 1f, 0.8f, 5.0f, 2, 5, ColorCode.RED, 10, 5f));
         Factory = gameObject.AddComponent<SpawnFactory>();
-        StartCoroutine(SpawnTimer());
+        
         scoreText.text = "Current Score: " + totalScore + "\tCurrent Level: " + levelInfo.currentLevel + "\nTargets to next Level: " + levelInfo.numTargetsToWin + "\tLives: " + lives;
+        Debug.Log("Spawn Target pool next");
+        
+        Debug.Log(TargetPool);
+        StartCoroutine(SpawnTimer());
     }
 
 
@@ -66,17 +75,27 @@ public class GameManager : MonoBehaviour {
     /// <returns></returns>
     IEnumerator SpawnTimer() {
         float timeSinceTargetSpawnBurst = GameManager.Instance.levelInfo.timeBetweenBursts - 1;
+        TargetPool = Factory.SpawnTargetBurst(30);
         float timeSinceAttackSpawn = 0;
+        targetPoolIndex = 0;
         while (true) {
             if(isPaused) {
                 yield return new WaitUntil(() => isPaused == false);
             }
 
             //Spawns bursts of targets utilizing SpawnFactory
-            if(timeSinceTargetSpawnBurst > GameManager.Instance.levelInfo.timeBetweenBursts)
+            if(timeSinceTargetSpawnBurst > GameManager.Instance.levelInfo.timeBetweenBursts || debugfastSpawn)
             {
-                Factory.SpawnTargetBurst(Random.Range(levelInfo.targetSpawnMin,levelInfo.targetSpawnMax));
+                for(int i = 0; i < Random.Range(levelInfo.targetSpawnMin,levelInfo.targetSpawnMax); ++i)
+                {
+                    TargetPool[(targetPoolIndex + 1) % TargetPool.Length].Generate();
+                    targetPoolIndex += 1;
+                }
                 timeSinceTargetSpawnBurst = 0;
+                if(debugfastSpawn)
+                {
+                    debugfastSpawn = false;
+                }
             }
 
             //Spawn attack utilizing SpawnFactory
@@ -100,6 +119,14 @@ public class GameManager : MonoBehaviour {
         if(Input.GetKeyDown(KeyCode.D)) {
             //Debug to get to higher levels easier.
             BlowUpEverything();
+        }
+        if(Input.GetKeyDown(KeyCode.B))
+        {
+            for (int i = 0; i < Random.Range(levelInfo.targetSpawnMin, levelInfo.targetSpawnMax); ++i)
+            {
+                TargetPool[(targetPoolIndex + 1) % TargetPool.Length].Generate();
+                targetPoolIndex += 1;
+            }
         }
     }
 

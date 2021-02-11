@@ -6,7 +6,7 @@ public class SpawnFactory : MonoBehaviour {
     public GameObject[] prefabsToGenerate = new GameObject[3];
 
 
-    public void Start() {
+    public void Awake() {
         prefabsToGenerate[0] = GameManager.Instance.TargetPrefab;
         prefabsToGenerate[1] = GameManager.Instance.DragonPrefab;
         prefabsToGenerate[2] = GameManager.Instance.WavePrefab;
@@ -22,9 +22,15 @@ public class SpawnFactory : MonoBehaviour {
         }
     }
 
-    public void SpawnTargetBurst(int numTargets) {
+    public Targets[] SpawnTargetBurst(int numTargets) {
+        Targets[] temp = new Targets[numTargets];
         for (int i = 0; i < numTargets; ++i) {
-            GameObject.Instantiate(prefabsToGenerate[0]);
+            Debug.Log("Loop Iteration: "+ i);
+            temp[i] = GameObject.Instantiate(prefabsToGenerate[0]).GetComponent<Targets>();
+            temp[i].transform.position = new Vector3(0, -5, 0);
+            temp[i].gameObject.SetActive(false);
         }
+        Debug.Log(temp);
+        return temp;
     }
 }

@@ -22,55 +22,15 @@ public class Targets : Generatable {
 
     private bool isGoingDown;
     private bool isPaused;
+    private Coroutine arcMovement;
 
     public float SpeedVariance;
     public float SpeedConstant;
 
     // Start is called before the first frame update
-    void Start() {
+    void Awake() {
         rBody = GetComponent<Rigidbody>();
         mRenderer = GetComponent<MeshRenderer>();
-        Color targetColor;
-        float randomFloat = Random.Range(0.0f, 1.0f);
-        //Chance of color based on GameManager
-        if (randomFloat <= GameManager.Instance.levelInfo.goalTargetSpawnChance) {
-            colorCode = GameManager.Instance.levelInfo.targetColor;
-        } else if (randomFloat <= (1-GameManager.Instance.levelInfo.goalTargetSpawnChance)/3 + GameManager.Instance.levelInfo.goalTargetSpawnChance){
-            colorCode = (ColorCode)((int)(GameManager.Instance.levelInfo.targetColor + 1) % (int)(ColorCode.BLACK));
-        } else if (randomFloat <= ((1 - GameManager.Instance.levelInfo.goalTargetSpawnChance) * 2) / 3 + GameManager.Instance.levelInfo.goalTargetSpawnChance) {
-            colorCode = (ColorCode)((int)(GameManager.Instance.levelInfo.targetColor + 2) % (int)(ColorCode.BLACK));
-        } else if (randomFloat <= (1 - GameManager.Instance.levelInfo.goalTargetSpawnChance) + GameManager.Instance.levelInfo.goalTargetSpawnChance) {
-            colorCode = (ColorCode)((int)(GameManager.Instance.levelInfo.targetColor + 3) % (int)(ColorCode.BLACK));
-        }
-
-        randomFloat = Random.Range(0.0f, 1.0f);
-        //Doing Black chance separately
-        if (randomFloat <= 0.02f) {
-            colorCode = ColorCode.BLACK;
-        }
-
-        switch (colorCode) {
-            case ColorCode.RED:
-                targetColor = Color.red;
-                break;
-            case ColorCode.BLUE:
-                targetColor = Color.blue;
-                break;
-            case ColorCode.GREEN:
-                targetColor = Color.green;
-                break;
-            case ColorCode.MAGENTA:
-                targetColor = Color.magenta;
-                break;
-            case ColorCode.BLACK:
-                targetColor = Color.black;
-                break;
-            default:
-                targetColor = Color.white;
-                break;
-        }
-        mRenderer.material.SetColor("_Color", targetColor); //TODO: FIX because Doesn't work
-        Generate();
         GameManager.Instance.OnGamePause += PauseTarget;
         GameManager.Instance.OnGameUnpause += UnpauseTarget;
         GameManager.Instance.DestroyAllTargets += SelfDestruct;
@@ -91,22 +51,19 @@ public class Targets : Generatable {
 
     public void SelfDestruct() {
         GameManager.Instance.Score(pointValue, GameManager.Instance.levelInfo.targetColor);
-        GameManager.Instance.DestroyAllTargets -= SelfDestruct;
-        GameManager.Instance.OnGamePause -= PauseTarget;
-        GameManager.Instance.OnGameUnpause -= UnpauseTarget;
-        Destroy(gameObject);
+        transform.position = new Vector3(0, -5, 0);
+        gameObject.SetActive(false);
     }
 
     public override void Activate() {
         GameManager.Instance.Score(pointValue, colorCode); 
-        GameManager.Instance.DestroyAllTargets -= SelfDestruct;
-        GameManager.Instance.OnGamePause -= PauseTarget;
-        GameManager.Instance.OnGameUnpause -= UnpauseTarget;
-        Destroy(gameObject);
+        transform.position = new Vector3(0, -5, 0);
+        gameObject.SetActive(false);
     }
 
     public override void Generate() {
         //TODO: Move trajectory/location randomization to spawnfactory.  Make speed adjustable as a float without breaking everything
+        gameObject.SetActive(true);
         startLocation = new Vector3(Random.Range(-10f, 10f),-1f,0f);
         transform.position = startLocation;
         yBound = Random.Range(0.5f, 1.5f);
@@ -118,6 +75,60 @@ public class Targets : Generatable {
         else if(xDirection > 9) {
             xDirection = 9;
         }
+
+
+        //This region of Code controlls the color selection of each target
+        #region colorGeneration
+        Color targetColor;
+        float randomFloat = Random.Range(0.0f, 1.0f);
+        //Chance of color based on GameManager
+        if (randomFloat <= GameManager.Instance.levelInfo.goalTargetSpawnChance)
+        {
+            colorCode = GameManager.Instance.levelInfo.targetColor;
+        }
+        else if (randomFloat <= (1 - GameManager.Instance.levelInfo.goalTargetSpawnChance) / 3 + GameManager.Instance.levelInfo.goalTargetSpawnChance)
+        {
+            colorCode = (ColorCode)((int)(GameManager.Instance.levelInfo.targetColor + 1) % (int)(ColorCode.BLACK));
+        }
+        else if (randomFloat <= ((1 - GameManager.Instance.levelInfo.goalTargetSpawnChance) * 2) / 3 + GameManager.Instance.levelInfo.goalTargetSpawnChance)
+        {
+            colorCode = (ColorCode)((int)(GameManager.Instance.levelInfo.targetColor + 2) % (int)(ColorCode.BLACK));
+        }
+        else if (randomFloat <= (1 - GameManager.Instance.levelInfo.goalTargetSpawnChance) + GameManager.Instance.levelInfo.goalTargetSpawnChance)
+        {
+            colorCode = (ColorCode)((int)(GameManager.Instance.levelInfo.targetColor + 3) % (int)(ColorCode.BLACK));
+        }
+
+        randomFloat = Random.Range(0.0f, 1.0f);
+        //Doing Black chance separately
+        if (randomFloat <= 0.02f)
+        {
+            colorCode = ColorCode.BLACK;
+        }
+
+        switch (colorCode)
+        {
+            case ColorCode.RED:
+                targetColor = Color.red;
+                break;
+            case ColorCode.BLUE:
+                targetColor = Color.blue;
+                break;
+            case ColorCode.GREEN:
+                targetColor = Color.green;
+                break;
+            case ColorCode.MAGENTA:
+                targetColor = Color.magenta;
+                break;
+            case ColorCode.BLACK:
+                targetColor = Color.black;
+                break;
+            default:
+                targetColor = Color.white;
+                break;
+        }
+        mRenderer.material.SetColor("_Color", targetColor);
+        #endregion
 
 
         CalculateTrajectoryEquation();
@@ -141,7 +152,7 @@ public class Targets : Generatable {
         float yIntercept = Random.Range(3f, 5f);
         float xRoot2 = Mathf.Sqrt(yIntercept / Slope) - xTranslation;
         float xRoot1 = -Mathf.Sqrt(yIntercept / Slope) - xTranslation;
-        StartCoroutine(FollowPath(Slope, xTranslation, yIntercept, xRoot1,xRoot2, isBackwards));
+        arcMovement = StartCoroutine(FollowPath(Slope, xTranslation, yIntercept, xRoot1,xRoot2, isBackwards));
     }
 
     /// <summary>
@@ -209,9 +220,8 @@ public class Targets : Generatable {
 
 
     public void OnBecameInvisible() {
-        GameManager.Instance.DestroyAllTargets -= SelfDestruct;
-        GameManager.Instance.OnGamePause -= PauseTarget;
-        GameManager.Instance.OnGameUnpause -= UnpauseTarget;
-        Destroy(this.gameObject);
+        transform.position = new Vector3(0, -5);
+        StopCoroutine(arcMovement);
+        gameObject.SetActive(false);
     }
 }

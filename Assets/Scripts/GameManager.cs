@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+//TODO: Add Functionality that changes targets attributes and Target Color when a Bonus Level Should be created, Thge isBonus variable should be correctly set based on accuracy but is untested
 public class GameManager : MonoBehaviour {
     public int lives = 3;
     public bool isPaused;
@@ -40,7 +41,7 @@ public class GameManager : MonoBehaviour {
         } else {
             Destroy(this);
         }
-        setLevelInfo(new LevelInfo(1, 0, 1f, 0.8f, 5.0f, 2, 5, ColorCode.RED, 10, 5f));
+        setLevelInfo(new LevelInfo(1, 0, 1f, 0.8f, 5.0f, 2, 5, ColorCode.RED, 10, 5f, false));
         Factory = gameObject.AddComponent<SpawnFactory>();
         
         scoreText.text = "Current Score: " + totalScore + "\tCurrent Level: " + levelInfo.currentLevel + "\nTargets to next Level: " + levelInfo.numTargetsToWin + "\tLives: " + lives;
@@ -134,8 +135,11 @@ public class GameManager : MonoBehaviour {
         if(colorCode == levelInfo.targetColor) {
             totalScore += (int)(pointValue * levelInfo.scoreMultiplier);
             levelInfo.numTargetsToWin -= 1;
+            levelInfo.Accuracy.x += 1;
+            levelInfo.Accuracy.y += 1;
         } else {
             totalScore -= (int)(pointValue * levelInfo.scoreMultiplier);
+            levelInfo.Accuracy.y += 1;
         }
         if(levelInfo.numTargetsToWin <= 0) {
             //TODO: Stop this from being a mess
@@ -148,10 +152,11 @@ public class GameManager : MonoBehaviour {
             int nextTargetSpawnMax = (levelInfo.targetSpawnMax >= 15) ? 15 : levelInfo.targetSpawnMax + 1;
             //TODO: Use a better formula for nextColorSpawnChance
             float nextLevelColorSpawnChance = Mathf.Lerp(levelInfo.goalTargetSpawnChance, 0.4f, 0.5f); //Lerps towards 0.4f spawn chance
-            LevelInfo nextLevelInfo = new LevelInfo(nextLevel, 0, nextScoreMult, nextLevelColorSpawnChance, nextTimeBetweenBursts, nextTargetSpawnMin, nextTargetSpawnMax, nextColor, 10, 5f);
+            bool bonusLevel = levelInfo.GetAccuracy() == 1f;
+            LevelInfo nextLevelInfo = new LevelInfo(nextLevel, 0, nextScoreMult, nextLevelColorSpawnChance, nextTimeBetweenBursts, nextTargetSpawnMin, nextTargetSpawnMax, nextColor, 10, 5f, bonusLevel);
             setLevelInfo(nextLevelInfo);
         }
-        scoreText.text = "Current Score: " + totalScore + "\tCurrent Level: " + levelInfo.currentLevel + "\nTargets to next Level: " + levelInfo.numTargetsToWin + "\tLives: " + lives;
+        scoreText.text = "Current Score: " + totalScore + "\tCurrent Level: " + levelInfo.currentLevel + "\nTargets to next Level: " + levelInfo.numTargetsToWin + "\tLives: " + lives + "\nAccuracy: " + levelInfo.GetAccuracy();
     }
 
     void setLevelInfo(LevelInfo levelInfo) {
@@ -197,10 +202,13 @@ public struct LevelInfo {
     public ColorCode targetColor;
     public float numTargetsToWin;
     public float timeBetweenAttacks;
+    [Tooltip("The x field stores the numebr of successful hits and the y field stores the total number of hits, to get percentage as a float use GetAccuracy")]
+    public Vector2Int Accuracy;
+    public bool isBonus;
 
     //TODO: Evaluate whether or not the Lists of floats are really necessary.  Remove them if not
     //TODO: Evaluate whether or not currentScore is required.  If not remove it
-    public LevelInfo(int curLevel, int curScore, float scoreMult, float tarSpawnChance, float timeBetweenBursts, int spawnSizeLowBound, int spawnSizeUpperBound, ColorCode targetColor, float numTargetsToWin, float timeBetweenAttacks)
+    public LevelInfo(int curLevel, int curScore, float scoreMult, float tarSpawnChance, float timeBetweenBursts, int spawnSizeLowBound, int spawnSizeUpperBound, ColorCode targetColor, float numTargetsToWin, float timeBetweenAttacks, bool isBonus)
     {
         this.currentLevel = curLevel;
         this.currentScore = curScore;
@@ -212,5 +220,26 @@ public struct LevelInfo {
         this.targetColor = targetColor;
         this.numTargetsToWin = numTargetsToWin;
         this.timeBetweenAttacks = timeBetweenAttacks;
+        Accuracy = new Vector2Int(0, 0);
+        this.isBonus = isBonus;
+    }
+
+    /// <summary>
+    /// This method returns the float ratio of the number of correct hits over total number of hits
+    /// If no hits have been recorded it returns a 1 for 100% accuracy
+    /// </summary>
+    /// <returns></returns>
+    public float GetAccuracy()
+    {
+        float temp;
+        if (Accuracy.y == 0)
+        {
+            temp = 1f;
+        }
+        else
+        {
+            temp = ((float)Accuracy.x) / ((float)Accuracy.y); 
+        }
+        return temp;
     }
 }

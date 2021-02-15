@@ -958,6 +958,9 @@ MonoBehaviour:
     targetColor: 0
     numTargetsToWin: 0
     timeBetweenAttacks: 0
+    Accuracy: {x: 0, y: 0}
+    isBonus: 0
+  numTargetsInPool: 55
 --- !u!4 &2084137972
 Transform:
   m_ObjectHideFlags: 0

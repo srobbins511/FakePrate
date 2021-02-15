@@ -27,6 +27,8 @@ public class GameManager : MonoBehaviour {
 
     public LevelInfo levelInfo;
 
+    public int numTargetsInPool = 55;
+
     private SpawnFactory Factory;
 
     private Targets[] TargetPool;
@@ -47,9 +49,7 @@ public class GameManager : MonoBehaviour {
         bonusLevel = false;
         
         scoreText.text = "Current Score: " + totalScore + "\tCurrent Level: " + levelInfo.currentLevel + "\nTargets to next Level: " + levelInfo.numTargetsToWin + "\tLives: " + lives;
-        Debug.Log("Spawn Target pool next");
         
-        Debug.Log(TargetPool);
         StartCoroutine(SpawnTimer());
     }
 
@@ -78,7 +78,7 @@ public class GameManager : MonoBehaviour {
     /// <returns></returns>
     IEnumerator SpawnTimer() {
         float timeSinceTargetSpawnBurst = GameManager.Instance.levelInfo.timeBetweenBursts - 1;
-        TargetPool = Factory.SpawnTargetBurst(30);
+        TargetPool = Factory.SpawnTargetBurst(numTargetsInPool);
         float timeSinceAttackSpawn = 0;
         targetPoolIndex = 0;
         while (true) {

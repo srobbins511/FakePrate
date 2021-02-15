@@ -32,6 +32,7 @@ public class GameManager : MonoBehaviour {
     private Targets[] TargetPool;
     private int targetPoolIndex;
 
+    private bool reachedNextLevel;
     private bool bonusLevel;
 
     // Start is called before the first frame update
@@ -41,7 +42,7 @@ public class GameManager : MonoBehaviour {
         } else {
             Destroy(this);
         }
-        setLevelInfo(new LevelInfo(1, 0, 1f, 0.8f, 5.0f, 2, 5, ColorCode.RED, 10, 5f, false));
+        setLevelInfo(new LevelInfo(1, 0, 1f, 0.8f, 5.0f, 2, 5, ColorCode.RED, 4f, 5f, false));
         Factory = gameObject.AddComponent<SpawnFactory>();
         bonusLevel = false;
         
@@ -129,30 +130,38 @@ public class GameManager : MonoBehaviour {
     }
 
     public void Score(float pointValue, ColorCode colorCode) {
-        if(colorCode == levelInfo.targetColor) {
+        if (colorCode == levelInfo.targetColor) {
             totalScore += (int)(pointValue * levelInfo.scoreMultiplier);
             levelInfo.numTargetsToWin -= 1;
             levelInfo.Accuracy.x += 1;
             levelInfo.Accuracy.y += 1;
+        } else if (colorCode == ColorCode.BLACK) {
+            totalScore += (int)(pointValue * levelInfo.scoreMultiplier);
+            levelInfo.numTargetsToWin -= 1;
         } else {
             totalScore -= (int)(pointValue * levelInfo.scoreMultiplier);
             levelInfo.Accuracy.y += 1;
         }
-        if(levelInfo.numTargetsToWin <= 0) {
+        if(levelInfo.numTargetsToWin <= 0 && !reachedNextLevel) {
             //TODO: Stop this from being a mess
             ColorCode nextColor = (ColorCode)((int)(levelInfo.targetColor + 1)%4);
             int nextLevel = levelInfo.currentLevel + 1;
             float nextScoreMult = levelInfo.scoreMultiplier + 0.1f;
-            float nextTimeBetweenBursts = levelInfo.timeBetweenBursts - 0.25f;
+            float nextTimeBetweenBursts = levelInfo.timeBetweenBursts - 0.05f;
             nextTimeBetweenBursts = (nextTimeBetweenBursts <= 1.0f) ? 1.0f : nextTimeBetweenBursts;
             int nextTargetSpawnMin = (levelInfo.targetSpawnMin >= 11) ? 11 : levelInfo.targetSpawnMin + 1;
             int nextTargetSpawnMax = (levelInfo.targetSpawnMax >= 15) ? 15 : levelInfo.targetSpawnMax + 1;
+            
+            int nextTargetsNeeded = Mathf.CeilToInt(3 + (50 - 3) * Mathf.Pow(1f / (1f + Mathf.Exp(-0.1f*levelInfo.currentLevel)), 5f));
             //TODO: Use a better formula for nextColorSpawnChance
             float nextLevelColorSpawnChance = Mathf.Lerp(levelInfo.goalTargetSpawnChance, 0.4f, 0.5f); //Lerps towards 0.4f spawn chance
             bonusLevel = !bonusLevel && levelInfo.GetAccuracy() == 1f;
             nextLevelColorSpawnChance = bonusLevel ? 1 : nextLevelColorSpawnChance;
-            LevelInfo nextLevelInfo = new LevelInfo(nextLevel, 0, nextScoreMult, nextLevelColorSpawnChance, nextTimeBetweenBursts, nextTargetSpawnMin, nextTargetSpawnMax, nextColor, 10, 5f, bonusLevel);
+            reachedNextLevel = true;
+            BlowUpEverything();
+            LevelInfo nextLevelInfo = new LevelInfo(nextLevel, 0, nextScoreMult, nextLevelColorSpawnChance, nextTimeBetweenBursts, nextTargetSpawnMin, nextTargetSpawnMax, nextColor, nextTargetsNeeded, 5f, bonusLevel);
             setLevelInfo(nextLevelInfo);
+            reachedNextLevel = false;
         }
         scoreText.text = "Current Score: " + totalScore + "\tCurrent Level: " + levelInfo.currentLevel + "\nTargets to next Level: " + levelInfo.numTargetsToWin + "\tLives: " + lives + "\nAccuracy: " + levelInfo.GetAccuracy();
     }

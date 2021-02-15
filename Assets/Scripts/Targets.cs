@@ -50,9 +50,11 @@ public class Targets : Generatable {
     }
 
     public void SelfDestruct() {
-        GameManager.Instance.Score(pointValue, ColorCode.BLACK);
-        transform.position = new Vector3(0, -5, 0);
-        gameObject.SetActive(false);
+        if (gameObject.activeSelf) {
+            GameManager.Instance.Score(pointValue, ColorCode.BLACK);
+            transform.position = new Vector3(0, -5, 0);
+            gameObject.SetActive(false);
+        }
     }
 
     public override void Activate() {

@@ -32,7 +32,7 @@ public class GameManager : MonoBehaviour {
     private Targets[] TargetPool;
     private int targetPoolIndex;
 
-    private bool debugfastSpawn;
+    private bool bonusLevel;
 
     // Start is called before the first frame update
     void Awake() {
@@ -43,6 +43,7 @@ public class GameManager : MonoBehaviour {
         }
         setLevelInfo(new LevelInfo(1, 0, 1f, 0.8f, 5.0f, 2, 5, ColorCode.RED, 10, 5f, false));
         Factory = gameObject.AddComponent<SpawnFactory>();
+        bonusLevel = false;
         
         scoreText.text = "Current Score: " + totalScore + "\tCurrent Level: " + levelInfo.currentLevel + "\nTargets to next Level: " + levelInfo.numTargetsToWin + "\tLives: " + lives;
         Debug.Log("Spawn Target pool next");
@@ -85,7 +86,7 @@ public class GameManager : MonoBehaviour {
             }
 
             //Spawns bursts of targets utilizing SpawnFactory
-            if(timeSinceTargetSpawnBurst > GameManager.Instance.levelInfo.timeBetweenBursts || debugfastSpawn)
+            if(timeSinceTargetSpawnBurst > GameManager.Instance.levelInfo.timeBetweenBursts)
             {
                 for(int i = 0; i < Random.Range(levelInfo.targetSpawnMin,levelInfo.targetSpawnMax); ++i)
                 {
@@ -93,10 +94,6 @@ public class GameManager : MonoBehaviour {
                     targetPoolIndex += 1;
                 }
                 timeSinceTargetSpawnBurst = 0;
-                if(debugfastSpawn)
-                {
-                    debugfastSpawn = false;
-                }
             }
 
             //Spawn attack utilizing SpawnFactory
@@ -152,7 +149,8 @@ public class GameManager : MonoBehaviour {
             int nextTargetSpawnMax = (levelInfo.targetSpawnMax >= 15) ? 15 : levelInfo.targetSpawnMax + 1;
             //TODO: Use a better formula for nextColorSpawnChance
             float nextLevelColorSpawnChance = Mathf.Lerp(levelInfo.goalTargetSpawnChance, 0.4f, 0.5f); //Lerps towards 0.4f spawn chance
-            bool bonusLevel = levelInfo.GetAccuracy() == 1f;
+            bonusLevel = !bonusLevel && levelInfo.GetAccuracy() == 1f;
+            nextLevelColorSpawnChance = bonusLevel ? 1 : nextLevelColorSpawnChance;
             LevelInfo nextLevelInfo = new LevelInfo(nextLevel, 0, nextScoreMult, nextLevelColorSpawnChance, nextTimeBetweenBursts, nextTargetSpawnMin, nextTargetSpawnMax, nextColor, 10, 5f, bonusLevel);
             setLevelInfo(nextLevelInfo);
         }

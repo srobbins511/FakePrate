@@ -29,8 +29,8 @@ public class SpawnFactory : MonoBehaviour {
             temp[i] = GameObject.Instantiate(prefabsToGenerate[0]).GetComponent<Targets>();
             temp[i].transform.position = new Vector3(0, -5, 0);
             temp[i].gameObject.SetActive(false);
+            temp[i].UID = (uint)i;
         }
-        Debug.Log(temp);
         return temp;
     }
 }

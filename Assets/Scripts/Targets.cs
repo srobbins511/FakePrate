@@ -19,6 +19,7 @@ public class Targets : Generatable {
     Vector3 startLocation;
     public float yBound;
     public float xDirection;
+    public uint UID;
 
     private bool isGoingDown;
     private bool isPaused;

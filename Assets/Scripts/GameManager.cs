@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 //TODO: Add Functionality that changes targets attributes and Target Color when a Bonus Level Should be created, Thge isBonus variable should be correctly set based on accuracy but is untested
@@ -54,7 +55,6 @@ public class GameManager : MonoBehaviour {
     }
 
 
-
     /// <summary>
     /// This method controls when the player hits the pause button in the UI the Game pauses and the pause screen is activated.
     /// It also invokes the correct Pause Events.
@@ -75,13 +75,13 @@ public class GameManager : MonoBehaviour {
     #region RandomFunctions
     static ulong next = 1;
 
-    uint rand() // RAND_MAX assumed to be 32767
+    uint Rand() // RAND_MAX assumed to be 32767
     {
         next = next * 1103515245 + 12345;
         return (uint)(next / 65536) % 32768;
     }
 
-    void srand(uint seed)
+    void SRand(uint seed)
     {
         next = seed;
     }

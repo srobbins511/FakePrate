@@ -15,7 +15,10 @@ public class Menu : MonoBehaviour {
     public InputField JoinIP;
 
     public void Start() {
-        HostIPText.text = "Your IP is " + Dns.GetHostEntry("127.0.0.1").AddressList[0].ToString();
+        HostIPText.text = "Your IP is " + Dns.GetHostEntry("127.0.0.1").AddressList[6].ToString();
+        for(int i = 0; i < Dns.GetHostEntry("127.0.0.1").AddressList.Length; ++i) {
+            Debug.Log("IP : " + i + " is " + Dns.GetHostEntry("127.0.0.1").AddressList[i].MapToIPv4().ToString());
+        }
         mainMenu.SetActive(true);
         multiplayerMenu.SetActive(false);
         joinMenu.SetActive(false);

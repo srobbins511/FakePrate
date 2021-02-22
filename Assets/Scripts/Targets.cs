@@ -35,6 +35,17 @@ public class Targets : Generatable {
         GameManager.Instance.OnGamePause += PauseTarget;
         GameManager.Instance.OnGameUnpause += UnpauseTarget;
         GameManager.Instance.DestroyAllTargets += SelfDestruct;
+        GameManager.Instance.OnRemoveTarget += SilentKill;
+    }
+
+    private void SilentKill(uint uid) {
+        if (UID == uid) {
+            //Activate without generating points :(
+            //Doesn't destroy because pool
+            transform.position = new Vector3(0, -5, 0);
+            GameManager.Instance.Score(-1, colorCode); //Scoring so the players stay on the same level
+            gameObject.SetActive(false);
+        }
     }
 
     /// <summary>
@@ -44,10 +55,10 @@ public class Targets : Generatable {
         if(!isPaused) {
             if(colorCode == ColorCode.BLACK) {
                 GameManager.Instance.BlowUpEverything();
+                NetworkManager.Instance.SendString("BOOM:");
             } else {
                 Activate();
             }
-            //NetworkManager.Instance.SendString("Destroyed: " + UID);
         }
     }
 
@@ -62,6 +73,7 @@ public class Targets : Generatable {
     public override void Activate() {
         GameManager.Instance.Score(pointValue, colorCode); 
         transform.position = new Vector3(0, -5, 0);
+        NetworkManager.Instance.SendString("KILL:" + UID.ToString());
         gameObject.SetActive(false);
     }
 
@@ -156,7 +168,6 @@ public class Targets : Generatable {
         float yIntercept = GameManager.RandRange(3f, 5f);
         float xRoot2 = Mathf.Sqrt(yIntercept / Slope) - xTranslation;
         float xRoot1 = -Mathf.Sqrt(yIntercept / Slope) - xTranslation;
-        Debug.Log("FLOATS: " + xTranslation + yIntercept + xRoot1 + xRoot2);
         arcMovement = StartCoroutine(FollowPath(Slope, xTranslation, yIntercept, xRoot1,xRoot2, isBackwards));
     }
 

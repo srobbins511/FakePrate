@@ -12,6 +12,7 @@ public class GameManager : MonoBehaviour {
     Coroutine spawnTimer;
 
     public delegate void SimpleEventHandler();
+    public delegate void UIDEventHandler(uint UID);
     public GameObject TargetPrefab;
     public GameObject DragonPrefab;
     public GameObject WavePrefab;
@@ -23,6 +24,7 @@ public class GameManager : MonoBehaviour {
     public event SimpleEventHandler OnLevelWin;
     public event SimpleEventHandler OnLevelLose;
     public event SimpleEventHandler DestroyAllTargets;
+    public event UIDEventHandler OnRemoveTarget;
 
     public static GameManager Instance;
 
@@ -174,7 +176,12 @@ public class GameManager : MonoBehaviour {
     }
 
     public void Score(float pointValue, ColorCode colorCode) {
-        if (colorCode == levelInfo.targetColor) {
+        if (pointValue < 0) {
+            //Enemy clicked this one :(
+            if(colorCode == levelInfo.targetColor || colorCode == ColorCode.BLACK) {
+                levelInfo.numTargetsToWin -= 1;
+            }
+        } else if (colorCode == levelInfo.targetColor) {
             totalScore += (int)(pointValue * levelInfo.scoreMultiplier);
             levelInfo.numTargetsToWin -= 1;
             levelInfo.Accuracy.x += 1;
@@ -233,6 +240,10 @@ public class GameManager : MonoBehaviour {
 
     public void BlowUpEverything() {
         DestroyAllTargets?.Invoke();
+    }
+
+    public void RemoveTarget(uint UID) {
+        OnRemoveTarget?.Invoke(UID);
     }
 
     public void loseLife() {

@@ -134,4 +134,16 @@ public class NetworkManager : MonoBehaviour {
         }
         connected = false;
     }
+
+    public void ListenForKill() {
+        while (connected) {
+            string message = ReceiveString();
+            Debug.Log("Message Received: " + message);
+            if (message.Substring(0, 5) == "KILL:") {
+                GameManager.Instance.RemoveTarget(uint.Parse(message.Substring(5)));
+            } else if (message.Substring(0,5) == "BOOM:") {
+                GameManager.Instance.BlowUpEverything();
+            }
+        }
+    }
 }

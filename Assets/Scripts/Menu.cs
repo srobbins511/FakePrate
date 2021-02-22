@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -48,8 +49,13 @@ public class Menu : MonoBehaviour {
         hostMenu.SetActive(true);
         joinMenu.SetActive(false);
         HostIPText.text = "Your IP is " + Dns.GetHostEntry("127.0.0.1").AddressList[0].ToString();
+        //TODO: Implement threading to get things to blow up correctly
+        //Thread _thread = new Thread(NetworkManager.Instance.StartServer);
+        //_thread.Start();
         NetworkManager.Instance.StartServer();
         NetworkManager.Instance.SendString("TEST MESSAGE 2");
+        Thread _thread = new Thread(NetworkManager.Instance.ListenForKill);
+        _thread.Start();
     }
 
     public void JoinGameMenu() {
@@ -64,5 +70,7 @@ public class Menu : MonoBehaviour {
         NetworkManager.Instance.JoinServer(JoinIP.text);
         string testString = NetworkManager.Instance.ReceiveString();
         Debug.Log(testString);
+        Thread _thread = new Thread(NetworkManager.Instance.ListenForKill);
+        _thread.Start();
     }
 }

@@ -29,7 +29,7 @@ public class NetworkManager : MonoBehaviour {
     }
 
     public void StartServer() {
-        IPHostEntry host = Dns.GetHostEntry("127.0.0.1");
+        IPHostEntry host = Dns.GetHostEntry("192.168.1.26");
         IPAddress ipAddress = host.AddressList[0];
         Debug.Log("IP Address: " + ipAddress.ToString());
         IPEndPoint localEndPoint = new IPEndPoint(ipAddress, 11234); //Running on port 11234

@@ -9,7 +9,7 @@ using System.Text;
 
 public class NetworkManager : MonoBehaviour {
     public static NetworkManager Instance;
-    public ulong seed;
+    public uint seed;
     public bool connected;
     public bool isServer;
 
@@ -25,6 +25,7 @@ public class NetworkManager : MonoBehaviour {
 
         connected = false;
         isServer = false;
+        DontDestroyOnLoad(this);
     }
 
     public void StartServer() {
@@ -50,13 +51,15 @@ public class NetworkManager : MonoBehaviour {
             data += Encoding.ASCII.GetString(dataBytes, 0, bytesRec);
             Debug.Log("Read: " + data);
 
-            seed = ulong.Parse(data.Substring(6));
+            seed = uint.Parse(data.Substring(6));
             //Shut down socket and close connection
             //handler.Shutdown(SocketShutdown.Both);
             //handler.Close();
             Debug.Log("Seed is: " + seed);
             connected = true;
             isServer = true;
+            //LOAD SCENE
+            Menu.LoadScene(1);
         } catch (Exception e) {
             Debug.Log("ERROR: " + e.ToString());
         }
@@ -75,12 +78,14 @@ public class NetworkManager : MonoBehaviour {
 
             Debug.Log("Connected!");
             //TODO: fix this jank ass code
-            seed = (ulong) (UnityEngine.Random.Range(0, Int32.MaxValue)) * (Int32.MaxValue) + (ulong) UnityEngine.Random.Range(0, Int32.MaxValue);
+            seed = (uint) UnityEngine.Random.Range(0, UInt32.MaxValue);
             byte[] msg = Encoding.ASCII.GetBytes("Seed: " + seed.ToString());
 
             int bytesSent = sender.Send(msg);
             connected = true;
             isServer = false;
+            //LOAD SCENE
+            Menu.LoadScene(1);
         } catch (Exception e) {
             Debug.Log("ERROR: " + e.ToString());
         }

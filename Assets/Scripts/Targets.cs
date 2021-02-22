@@ -47,6 +47,7 @@ public class Targets : Generatable {
             } else {
                 Activate();
             }
+            //NetworkManager.Instance.SendString("Destroyed: " + UID);
         }
     }
 
@@ -67,10 +68,10 @@ public class Targets : Generatable {
     public override void Generate() {
         //TODO: Move trajectory/location randomization to spawnfactory.  Make speed adjustable as a float without breaking everything
         gameObject.SetActive(true);
-        startLocation = new Vector3(Random.Range(-10f, 10f),-1f,0f);
+        startLocation = new Vector3(GameManager.RandRange(-10f, 10f),-1f,0f);
         transform.position = startLocation;
-        yBound = Random.Range(0.5f, 1.5f);
-        xDirection = Random.Range(-6f, 6f);
+        yBound = GameManager.RandRange(0.5f, 1.5f);
+        xDirection = GameManager.RandRange(-6f, 6f);
         xDirection = xDirection + startLocation.x;
         if(xDirection < -9) {
             xDirection = -9;
@@ -83,7 +84,7 @@ public class Targets : Generatable {
         //This region of Code controlls the color selection of each target
         #region colorGeneration
         Color targetColor;
-        float randomFloat = Random.Range(0.0f, 1.0f);
+        float randomFloat = GameManager.RandFloat();
         //Chance of color based on GameManager
         if (randomFloat <= GameManager.Instance.levelInfo.goalTargetSpawnChance)
         {
@@ -102,7 +103,7 @@ public class Targets : Generatable {
             colorCode = (ColorCode)((int)(GameManager.Instance.levelInfo.targetColor + 3) % (int)(ColorCode.BLACK));
         }
 
-        randomFloat = Random.Range(0.0f, 1.0f);
+        randomFloat = GameManager.RandFloat();
         //Doing Black chance separately
         if (randomFloat <= 0.02f)
         {
@@ -149,12 +150,13 @@ public class Targets : Generatable {
     /// </summary>
     void CalculateTrajectoryEquation()
     {
-        bool isBackwards = Random.Range(0, 2) == 0;
-        float Slope = Random.Range(2f, 5f);
-        float xTranslation = Random.Range(-9f, 9f);
-        float yIntercept = Random.Range(3f, 5f);
+        bool isBackwards = GameManager.RandRange(0, 2) == 0;
+        float Slope = GameManager.RandRange(2f, 5f);
+        float xTranslation = GameManager.RandRange(-9f, 9f);
+        float yIntercept = GameManager.RandRange(3f, 5f);
         float xRoot2 = Mathf.Sqrt(yIntercept / Slope) - xTranslation;
         float xRoot1 = -Mathf.Sqrt(yIntercept / Slope) - xTranslation;
+        Debug.Log("FLOATS: " + xTranslation + yIntercept + xRoot1 + xRoot2);
         arcMovement = StartCoroutine(FollowPath(Slope, xTranslation, yIntercept, xRoot1,xRoot2, isBackwards));
     }
 

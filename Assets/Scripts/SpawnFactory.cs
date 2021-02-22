@@ -13,7 +13,7 @@ public class SpawnFactory : MonoBehaviour {
         //SpawnTargetBurst(GameManager.Instance.levelInfo.targetSpawnBurstSize);
     }
     public void SpawnAtack() {
-        if(Random.value > .5f) {
+        if(GameManager.RandFloat() > .5f) {
             //Spawn a Dragon
             GameObject.Instantiate(prefabsToGenerate[1]);
         } else {
@@ -25,7 +25,6 @@ public class SpawnFactory : MonoBehaviour {
     public Targets[] SpawnTargetBurst(int numTargets) {
         Targets[] temp = new Targets[numTargets];
         for (int i = 0; i < numTargets; ++i) {
-            Debug.Log("Loop Iteration: "+ i);
             temp[i] = GameObject.Instantiate(prefabsToGenerate[0]).GetComponent<Targets>();
             temp[i].transform.position = new Vector3(0, -5, 0);
             temp[i].gameObject.SetActive(false);

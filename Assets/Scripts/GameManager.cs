@@ -51,6 +51,12 @@ public class GameManager : MonoBehaviour {
         
         scoreText.text = "Current Score: " + totalScore + "\tCurrent Level: " + levelInfo.currentLevel + "\nTargets to next Level: " + levelInfo.numTargetsToWin + "\tLives: " + lives;
         
+        if(NetworkManager.Instance != null) {
+            if(NetworkManager.Instance.connected) {
+                SRand(NetworkManager.Instance.seed);
+            }
+        }
+
         StartCoroutine(SpawnTimer());
     }
 
@@ -75,13 +81,35 @@ public class GameManager : MonoBehaviour {
     #region RandomFunctions
     static ulong next = 1;
 
-    uint Rand() // RAND_MAX assumed to be 32767
+    public static int RandRange(int min, int max) {
+        int randInt = Mathf.RoundToInt((Rand() * (max - min) / 32767f) + min);
+        if(randInt < min || randInt > max) {
+            Debug.Log("ERROR IN RANDRANGE");
+            Debug.Log(randInt + " not between " + min + " and " + max);
+        }
+        return randInt;
+    }
+
+    public static float RandRange(float min, float max) {
+        float randFloat = (Rand() / 32767f) * (max - min) + min;
+        if (randFloat < min || randFloat > max) {
+            Debug.Log("ERROR IN RANDRANGE");
+            Debug.Log(randFloat + " not between " + min + " and " + max);
+        }
+        return randFloat;
+    }
+
+    public static float RandFloat() {
+        return Rand() / 32767f;
+    }
+
+    public static uint Rand() // RAND_MAX assumed to be 32767
     {
         next = next * 1103515245 + 12345;
         return (uint)(next / 65536) % 32768;
     }
 
-    void SRand(uint seed)
+    public static void SRand(uint seed)
     {
         next = seed;
     }
@@ -105,7 +133,7 @@ public class GameManager : MonoBehaviour {
             //Spawns bursts of targets utilizing SpawnFactory
             if(timeSinceTargetSpawnBurst > GameManager.Instance.levelInfo.timeBetweenBursts)
             {
-                for(int i = 0; i < Random.Range(levelInfo.targetSpawnMin,levelInfo.targetSpawnMax); ++i)
+                for(int i = 0; i < RandRange(levelInfo.targetSpawnMin,levelInfo.targetSpawnMax); ++i)
                 {
                     TargetPool[(targetPoolIndex + 1) % TargetPool.Length].Generate();
                     targetPoolIndex += 1;
@@ -137,7 +165,7 @@ public class GameManager : MonoBehaviour {
         }
         if(Input.GetKeyDown(KeyCode.B))
         {
-            for (int i = 0; i < Random.Range(levelInfo.targetSpawnMin, levelInfo.targetSpawnMax); ++i)
+            for (int i = 0; i < RandRange(levelInfo.targetSpawnMin, levelInfo.targetSpawnMax); ++i)
             {
                 TargetPool[(targetPoolIndex + 1) % TargetPool.Length].Generate();
                 targetPoolIndex += 1;

@@ -20,7 +20,11 @@ public class Menu : MonoBehaviour {
         hostMenu.SetActive(false);
     }
 
-    public void LoadScene(int scene) {
+    public void SinglePlayer() {
+        SceneManager.LoadScene(1);
+    }
+
+    public static void LoadScene(int scene) {
         SceneManager.LoadScene(scene);
     }
 

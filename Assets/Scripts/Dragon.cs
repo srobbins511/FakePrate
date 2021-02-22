@@ -11,9 +11,10 @@ public class Dragon : Attacks
     }
 
     // Update is called once per frame
-    void Update()
-    {
-        transform.position = transform.position + new Vector3(-1f, 0f, 0f) * Vector3.Magnitude(speed) * Time.deltaTime;
+    void Update() {
+        if(!GameManager.Instance.isPaused) {
+            transform.position = transform.position + new Vector3(-1f, 0f, 0f) * Vector3.Magnitude(speed) * Time.deltaTime;
+        }
     }
 
     public void OnBecameInvisible() {

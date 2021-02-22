@@ -143,6 +143,8 @@ public class NetworkManager : MonoBehaviour {
                 GameManager.Instance.RemoveTarget(uint.Parse(message.Substring(5)));
             } else if (message.Substring(0,5) == "BOOM:") {
                 GameManager.Instance.BlowUpEverything();
+            } else if (message.Substring(0,5) == "PAWS:") {
+                GameManager.Instance.Pause();
             }
         }
     }

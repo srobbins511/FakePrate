@@ -160,12 +160,13 @@ public class GameManager : MonoBehaviour {
     void Update() {
         if(Input.GetKeyDown(KeyCode.P)) {
             Pause();
+            NetworkManager.Instance.SendString("PAWS:");
         }
-        if(Input.GetKeyDown(KeyCode.D)) {
+        if (Input.GetKeyDown(KeyCode.D) && !NetworkManager.Instance.connected) {
             //Debug to get to higher levels easier.
             BlowUpEverything();
         }
-        if(Input.GetKeyDown(KeyCode.B))
+        if(Input.GetKeyDown(KeyCode.B) && !NetworkManager.Instance.connected)
         {
             for (int i = 0; i < RandRange(levelInfo.targetSpawnMin, levelInfo.targetSpawnMax); ++i)
             {

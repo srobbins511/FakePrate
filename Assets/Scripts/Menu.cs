@@ -15,6 +15,7 @@ public class Menu : MonoBehaviour {
     public InputField JoinIP;
 
     public void Start() {
+        HostIPText.text = "Your IP is " + Dns.GetHostEntry("127.0.0.1").AddressList[0].ToString();
         mainMenu.SetActive(true);
         multiplayerMenu.SetActive(false);
         joinMenu.SetActive(false);
@@ -48,7 +49,6 @@ public class Menu : MonoBehaviour {
         multiplayerMenu.SetActive(false);
         hostMenu.SetActive(true);
         joinMenu.SetActive(false);
-        HostIPText.text = "Your IP is " + Dns.GetHostEntry("127.0.0.1").AddressList[0].ToString();
         //TODO: Implement threading to get things to blow up correctly
         //Thread _thread = new Thread(NetworkManager.Instance.StartServer);
         //_thread.Start();

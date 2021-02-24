@@ -23,7 +23,6 @@ public class GameManager : MonoBehaviour {
     public event SimpleEventHandler OnGamePause;
     public event SimpleEventHandler OnGameUnpause;
     public event SimpleEventHandler OnLevelWin;
-    public event SimpleEventHandler OnLevelLose;
     public event SimpleEventHandler DestroyAllTargets;
     public event UIDEventHandler OnRemoveTarget;
 

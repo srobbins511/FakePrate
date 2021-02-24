@@ -56,7 +56,7 @@ public class Targets : Generatable {
             if(colorCode == ColorCode.BLACK) {
                 GameManager.Instance.BlowUpEverything();
                 NetworkManager.Instance.SendString("BOOM:");
-            } else {
+            } else if(GameManager.Instance.lives > 0) {
                 Activate();
             }
         }

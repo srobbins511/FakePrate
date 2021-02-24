@@ -16,6 +16,7 @@ public class GameManager : MonoBehaviour {
     public GameObject TargetPrefab;
     public GameObject DragonPrefab;
     public GameObject WavePrefab;
+    public GameObject PauseMenu;
     public Text scoreText;
     public Image targetColorImage;
 
@@ -58,7 +59,7 @@ public class GameManager : MonoBehaviour {
                 SRand(NetworkManager.Instance.seed);
             }
         }
-
+        OnLevelWin += OnLevelWinMethod;
         StartCoroutine(SpawnTimer());
     }
 
@@ -72,11 +73,20 @@ public class GameManager : MonoBehaviour {
         if(isPaused)
         {
             OnGamePause?.Invoke();
+            PauseMenu.SetActive(true);
         }
         else
         {
             OnGameUnpause?.Invoke();
+            PauseMenu.SetActive(false);
         }
+    }
+
+    //TODO: NETWORKING????????????????????????
+    public void ExitGame()
+    {
+        NetworkManager.Instance.CloseSockets();
+        SceneManager.LoadScene(0);
     }
 
 
@@ -195,27 +205,33 @@ public class GameManager : MonoBehaviour {
             levelInfo.Accuracy.y += 1;
         }
         if(levelInfo.numTargetsToWin <= 0 && !reachedNextLevel) {
-            //TODO: Stop this from being a mess
-            ColorCode nextColor = (ColorCode)((int)(levelInfo.targetColor + 1)%4);
-            int nextLevel = levelInfo.currentLevel + 1;
-            float nextScoreMult = levelInfo.scoreMultiplier + 0.1f;
-            float nextTimeBetweenBursts = levelInfo.timeBetweenBursts - 0.05f;
-            nextTimeBetweenBursts = (nextTimeBetweenBursts <= 1.0f) ? 1.0f : nextTimeBetweenBursts;
-            int nextTargetSpawnMin = (levelInfo.targetSpawnMin >= 11) ? 11 : levelInfo.targetSpawnMin + 1;
-            int nextTargetSpawnMax = (levelInfo.targetSpawnMax >= 15) ? 15 : levelInfo.targetSpawnMax + 1;
+            LevelWon();
             
-            int nextTargetsNeeded = Mathf.CeilToInt(3 + (50 - 3) * Mathf.Pow(1f / (1f + Mathf.Exp(-0.1f*levelInfo.currentLevel)), 5f));
-            //TODO: Use a better formula for nextColorSpawnChance
-            float nextLevelColorSpawnChance = Mathf.Lerp(levelInfo.goalTargetSpawnChance, 0.4f, 0.5f); //Lerps towards 0.4f spawn chance
-            bonusLevel = !bonusLevel && levelInfo.GetAccuracy() == 1f;
-            nextLevelColorSpawnChance = bonusLevel ? 1 : nextLevelColorSpawnChance;
-            reachedNextLevel = true;
-            BlowUpEverything();
-            LevelInfo nextLevelInfo = new LevelInfo(nextLevel, 0, nextScoreMult, nextLevelColorSpawnChance, nextTimeBetweenBursts, nextTargetSpawnMin, nextTargetSpawnMax, nextColor, nextTargetsNeeded, 5f, bonusLevel);
-            setLevelInfo(nextLevelInfo);
-            reachedNextLevel = false;
         }
         scoreText.text = "Current Score: " + totalScore + "\tCurrent Level: " + levelInfo.currentLevel + "\nTargets to next Level: " + levelInfo.numTargetsToWin + "\tLives: " + lives + "\nAccuracy: " + levelInfo.GetAccuracy();
+    }
+
+    public void OnLevelWinMethod()
+    {
+        //TODO: Stop this from being a mess
+        ColorCode nextColor = (ColorCode)((int)(levelInfo.targetColor + 1) % 4);
+        int nextLevel = levelInfo.currentLevel + 1;
+        float nextScoreMult = levelInfo.scoreMultiplier + 0.1f;
+        float nextTimeBetweenBursts = levelInfo.timeBetweenBursts - 0.05f;
+        nextTimeBetweenBursts = (nextTimeBetweenBursts <= 1.0f) ? 1.0f : nextTimeBetweenBursts;
+        int nextTargetSpawnMin = (levelInfo.targetSpawnMin >= 11) ? 11 : levelInfo.targetSpawnMin + 1;
+        int nextTargetSpawnMax = (levelInfo.targetSpawnMax >= 15) ? 15 : levelInfo.targetSpawnMax + 1;
+
+        int nextTargetsNeeded = Mathf.CeilToInt(3 + (50 - 3) * Mathf.Pow(1f / (1f + Mathf.Exp(-0.1f * levelInfo.currentLevel)), 5f));
+        //TODO: Use a better formula for nextColorSpawnChance
+        float nextLevelColorSpawnChance = Mathf.Lerp(levelInfo.goalTargetSpawnChance, 0.4f, 0.5f); //Lerps towards 0.4f spawn chance
+        bonusLevel = !bonusLevel && levelInfo.GetAccuracy() == 1f;
+        nextLevelColorSpawnChance = bonusLevel ? 1 : nextLevelColorSpawnChance;
+        reachedNextLevel = true;
+        BlowUpEverything();
+        LevelInfo nextLevelInfo = new LevelInfo(nextLevel, 0, nextScoreMult, nextLevelColorSpawnChance, nextTimeBetweenBursts, nextTargetSpawnMin, nextTargetSpawnMax, nextColor, nextTargetsNeeded, 5f, bonusLevel);
+        setLevelInfo(nextLevelInfo);
+        reachedNextLevel = false;
     }
 
     void setLevelInfo(LevelInfo levelInfo) {
@@ -245,6 +261,11 @@ public class GameManager : MonoBehaviour {
 
     public void RemoveTarget(uint UID) {
         OnRemoveTarget?.Invoke(UID);
+    }
+
+    public void LevelWon()
+    {
+        OnLevelWin?.Invoke();
     }
 
     public void loseLife() {

@@ -33,7 +33,7 @@ public class Character : MonoBehaviour
         if(other.GetComponent<Attacks>()) {
             Debug.Log("HIT BY ATTACK!");
             GameManager.Instance.loseLife();
-            if (GameManager.Instance.lives < 0) {
+            if (GameManager.Instance.lives <= 0) {
                 Destroy(gameObject);
             }
         }

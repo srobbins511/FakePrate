@@ -53,7 +53,7 @@ public class Targets : Generatable {
     /// </summary>
     public void OnMouseDown() {
         if(!isPaused) {
-            if(colorCode == ColorCode.BLACK) {
+            if(colorCode == ColorCode.BLACK && GameManager.Instance.lives > 0) {
                 GameManager.Instance.BlowUpEverything();
                 NetworkManager.Instance.SendString("BOOM:");
             } else if(GameManager.Instance.lives > 0) {

@@ -8,7 +8,7 @@ using UnityEngine.UI;
 public class GameManager : MonoBehaviour {
     public int lives = 3;
     public bool isPaused;
-    int totalScore;
+    public int totalScore;
     Coroutine spawnTimer;
 
     public delegate void SimpleEventHandler();
@@ -58,7 +58,10 @@ public class GameManager : MonoBehaviour {
                 SRand(NetworkManager.Instance.seed);
             }
         }
+
+        gameObject.AddComponent<SaveManager>();
         OnLevelWin += OnLevelWinMethod;
+        SaveManager.DetectSaves();
         StartCoroutine(SpawnTimer());
     }
 

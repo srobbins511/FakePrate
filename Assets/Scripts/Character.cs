@@ -35,6 +35,7 @@ public class Character : MonoBehaviour
             GameManager.Instance.loseLife();
             if (GameManager.Instance.lives <= 0) {
                 Destroy(gameObject);
+                SaveManager.Save();
             }
         }
     }

@@ -59,9 +59,9 @@ public class GameManager : MonoBehaviour {
             }
         }
 
-        gameObject.AddComponent<SaveManager>();
-        OnLevelWin += OnLevelWinMethod;
+        SaveManager.StartUp();
         SaveManager.DetectSaves();
+        OnLevelWin += OnLevelWinMethod;
         StartCoroutine(SpawnTimer());
     }
 
@@ -211,6 +211,11 @@ public class GameManager : MonoBehaviour {
             
         }
         scoreText.text = "Current Score: " + totalScore + "\tCurrent Level: " + levelInfo.currentLevel + "\nTargets to next Level: " + levelInfo.numTargetsToWin + "\tLives: " + lives + "\nAccuracy: " + levelInfo.GetAccuracy();
+    }
+
+    public void SaveGame()
+    {
+        SaveManager.Save();
     }
 
     public void OnLevelWinMethod()

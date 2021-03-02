@@ -76,4 +76,9 @@ public class Menu : MonoBehaviour {
         Thread _thread = new Thread(NetworkManager.Instance.ListenForKill);
         _thread.Start();
     }
+
+    public void Quit()
+    {
+        Application.Quit();
+    }
 }

@@ -7,50 +7,14 @@ public class SaveManager : MonoBehaviour
     static string curDirectory;
     static string saveDirectory;
     static string[] Saves;
+    static SavedData[] Data;
+    static int HighestScore;
     static bool saveDetected;
     const int DataLineSize = 3;
     // Start is called before the first frame update
-    void Awake()
+    public static void StartUp()
     {
-        
         curDirectory = System.IO.Directory.GetCurrentDirectory();
-        /*
-        saveFileName = "Svae1.txt";
-        Debug.Log(curDirectory);
-
-
-        string[] testText;
-        testText = new string[3];
-        testText[0] = System.DateTime.Now.ToString();
-        testText[1] = "Total Score:" + 0;
-        testText[2] = "Test Test";
-
-
-        if (System.IO.Directory.Exists(curDirectory + "\\Saves"))
-        {
-            Debug.Log("Save Direcory Exists");
-            
-        }
-        else
-        {
-            Debug.Log("Save Directory Doesnt exist");
-            System.IO.Directory.CreateDirectory(curDirectory + "\\Saves");
-        }
-        string[] fileInput;
-        if (System.IO.File.Exists(curDirectory + "\\Saves\\" + saveFileName))
-        {
-            fileInput = System.IO.File.ReadAllLines(curDirectory + "\\Saves\\" + saveFileName);
-            System.IO.File.WriteAllLines(curDirectory + "\\Saves\\" + saveFileName, testText);
-
-        }
-        else
-        {
-            System.IO.File.Create(curDirectory + "\\Saves\\" + saveFileName);
-            System.IO.File.WriteAllLines(curDirectory + "\\Saves\\" + saveFileName, testText);
-        }
-
-        Debug.Log("End Start Method");
-        */
     }
 
     // Update is called once per frame
@@ -69,13 +33,15 @@ public class SaveManager : MonoBehaviour
         if (System.IO.Directory.Exists(saveDirectory))
         {
             Saves = System.IO.Directory.GetFiles(saveDirectory);
+            Data = new SavedData[Saves.Length];
+            for(int i = 0; i < Saves.Length; ++i)
+            {
+                ReadSaveData(System.IO.File.ReadAllLines(Saves[i]),i);
+            }
             if(Saves.Length > 0)
             {
-                foreach(string s in Saves)
-                {
-                    ReadSaveData(System.IO.File.ReadAllLines(s));
-                    Debug.Log(s);
-                }
+                saveDetected = true;
+                HighestScore = SavedData.getHighScore(Data);
                 return true;
             }
         }
@@ -88,7 +54,7 @@ public class SaveManager : MonoBehaviour
         return false;
     }
 
-    static private void ReadSaveData(string[] data)
+    static private void ReadSaveData(string[] data, int SaveNumber)
     {
         if(data.Length != DataLineSize)
         {
@@ -97,9 +63,9 @@ public class SaveManager : MonoBehaviour
         else
         {
             int score = int.Parse(data[1]);
-            Debug.Log("Score: " + score);
             int level = int.Parse(data[2]);
-            Debug.Log("Level: " + level);
+            System.DateTime time = System.DateTime.Parse(data[0]);
+            Data[SaveNumber] = new SavedData(score, "", level,time);
         }
     }
 
@@ -126,19 +92,31 @@ public class SaveManager : MonoBehaviour
     }
 
 
-    struct SavedData
-    {
-        int HighScore;
-        int level;
-        string PlayerName;
-        Time gameDate;
+    
+}
 
-        SavedData(int score, string name, int levelReached, Time time)
+public struct SavedData
+{
+    public int HighScore;
+    public int level;
+    public string PlayerName;
+    public System.DateTime gameDate;
+
+    public SavedData(int score, string name, int levelReached, System.DateTime time)
+    {
+        HighScore = score;
+        level = levelReached;
+        PlayerName = name;
+        gameDate = time;
+    }
+
+    public static int getHighScore(SavedData[] data)
+    {
+        int max = 0;
+        foreach(SavedData d in data)
         {
-            HighScore = score;
-            level = levelReached;
-            PlayerName = name;
-            gameDate = time;
+            max = max>=d.HighScore ? max: d.HighScore;
         }
+        return max;
     }
 }

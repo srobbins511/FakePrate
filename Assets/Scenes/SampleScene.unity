@@ -1325,6 +1325,17 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 2084137971}
+        m_MethodName: SaveGame
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &2052682494
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1393,6 +1404,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lives: 3
   isPaused: 0
+  totalScore: 0
   TargetPrefab: {fileID: 3757150448890360059, guid: 5e4eef3d7e8dab846b1d5f833953a874,
     type: 3}
   DragonPrefab: {fileID: 131073299616261108, guid: 6461624cd5bd76e40925cc4d00f41e77,

@@ -18,7 +18,9 @@ public class GameManager : MonoBehaviour {
     public GameObject WavePrefab;
     public GameObject PauseMenu;
     public Text scoreText;
+    public Text HighScore;
     public Image targetColorImage;
+    public int energyLevel;
 
     public event SimpleEventHandler OnGamePause;
     public event SimpleEventHandler OnGameUnpause;
@@ -61,6 +63,10 @@ public class GameManager : MonoBehaviour {
 
         SaveManager.StartUp();
         SaveManager.DetectSaves();
+
+        HighScore.text = "High Score: " + SaveManager.HighestScore;
+        Debug.Log("Energy: " + SaveManager.EnergyValue);
+        energyLevel = SaveManager.EnergyValue;
         OnLevelWin += OnLevelWinMethod;
         StartCoroutine(SpawnTimer());
     }

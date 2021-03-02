@@ -8,9 +8,10 @@ public class SaveManager : MonoBehaviour
     static string saveDirectory;
     static string[] Saves;
     static SavedData[] Data;
-    static int HighestScore;
+    public static int HighestScore;
+    public static int EnergyValue;
     static bool saveDetected;
-    const int DataLineSize = 3;
+    const int DataLineSize = 4;
     // Start is called before the first frame update
     public static void StartUp()
     {
@@ -42,6 +43,7 @@ public class SaveManager : MonoBehaviour
             {
                 saveDetected = true;
                 HighestScore = SavedData.getHighScore(Data);
+                EnergyValue = SavedData.GetEnergyValue(Data);
                 return true;
             }
         }
@@ -65,7 +67,11 @@ public class SaveManager : MonoBehaviour
             int score = int.Parse(data[1]);
             int level = int.Parse(data[2]);
             System.DateTime time = System.DateTime.Parse(data[0]);
-            Data[SaveNumber] = new SavedData(score, "", level,time);
+            int energy = int.Parse(data[3]);
+            Debug.Log("Energy read from file: " + energy);
+            energy += System.DateTime.Now.Subtract(time).Duration().Minutes / 2;
+            energy = energy > 100 ? 100 : energy;
+            Data[SaveNumber] = new SavedData(score, "", level,time, energy);
         }
     }
 
@@ -74,13 +80,14 @@ public class SaveManager : MonoBehaviour
         System.IO.File.WriteAllLines(saveDirectory + "\\" + Saves.Length , data);
     }
 
-    public static string[] ConvertDataToSaveFormat(int totalScore, int level)
+    public static string[] ConvertDataToSaveFormat(int totalScore, int level, int energyLevel)
     {
         string[] saveText;
-        saveText = new string[3];
+        saveText = new string[DataLineSize];
         saveText[0] = System.DateTime.Now.ToString();
-        saveText[1] = "" + totalScore;
-        saveText[2] = "" + level;
+        saveText[1] = totalScore.ToString();
+        saveText[2] = level.ToString();
+        saveText[3] = GameManager.Instance.energyLevel.ToString();
         return saveText;
     }
 
@@ -88,7 +95,8 @@ public class SaveManager : MonoBehaviour
     {
         int curScore = GameManager.Instance.totalScore;
         int curLev = GameManager.Instance.levelInfo.currentLevel;
-        SaveData(ConvertDataToSaveFormat(curScore, curLev));
+        int energy = GameManager.Instance.energyLevel;
+        SaveData(ConvertDataToSaveFormat(curScore, curLev, energy));
     }
 
 
@@ -101,13 +109,15 @@ public struct SavedData
     public int level;
     public string PlayerName;
     public System.DateTime gameDate;
+    public int Energy;
 
-    public SavedData(int score, string name, int levelReached, System.DateTime time)
+    public SavedData(int score, string name, int levelReached, System.DateTime time, int energy)
     {
         HighScore = score;
         level = levelReached;
         PlayerName = name;
         gameDate = time;
+        Energy = energy;
     }
 
     public static int getHighScore(SavedData[] data)
@@ -118,5 +128,20 @@ public struct SavedData
             max = max>=d.HighScore ? max: d.HighScore;
         }
         return max;
+    }
+
+    public static int GetEnergyValue(SavedData[] data)
+    {
+        System.DateTime latestSave = System.DateTime.MinValue;
+        int newEnergy = 100;
+        foreach(SavedData d in data)
+        {
+            latestSave = latestSave >= d.gameDate ? latestSave : d.gameDate;
+            if(latestSave.Equals(d.gameDate))
+            {
+                newEnergy = d.Energy;
+            }
+        }
+        return newEnergy;
     }
 }

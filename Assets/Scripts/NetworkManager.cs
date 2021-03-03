@@ -147,6 +147,8 @@ public class NetworkManager : MonoBehaviour {
                 GameManager.Instance.BlowUpEverything();
             } else if (message.Substring(0,5) == "PAWS:") {
                 GameManager.Instance.Pause();
+            } else if (message.Substring(0,5) == "QUIT:") {
+                CloseSockets();
             }
         }
     }

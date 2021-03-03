@@ -17,6 +17,7 @@ public class GameManager : MonoBehaviour {
     public GameObject DragonPrefab;
     public GameObject WavePrefab;
     public GameObject PauseMenu;
+    public GameObject Border;
     public Text scoreText;
     public Text HighScore;
     public Image targetColorImage;
@@ -54,11 +55,11 @@ public class GameManager : MonoBehaviour {
         bonusLevel = false;
         
         scoreText.text = "Current Score: " + totalScore + "\tCurrent Level: " + levelInfo.currentLevel + "\nTargets to next Level: " + levelInfo.numTargetsToWin + "\tLives: " + lives;
-        
-        if(NetworkManager.Instance != null) {
-            if(NetworkManager.Instance.connected) {
-                SRand(NetworkManager.Instance.seed);
-            }
+
+        if (NetworkManager.Instance != null && NetworkManager.Instance.connected) {
+            SRand(NetworkManager.Instance.seed);
+        } else {
+            SRand((uint)UnityEngine.Random.Range(0, System.UInt32.MaxValue));
         }
 
         SaveManager.StartUp();
@@ -93,6 +94,7 @@ public class GameManager : MonoBehaviour {
     //TODO: NETWORKING????????????????????????
     public void ExitGame()
     {
+        NetworkManager.Instance.SendString("QUIT:");
         NetworkManager.Instance.CloseSockets();
         SceneManager.LoadScene(0);
     }
@@ -239,6 +241,8 @@ public class GameManager : MonoBehaviour {
         //TODO: Use a better formula for nextColorSpawnChance
         float nextLevelColorSpawnChance = Mathf.Lerp(levelInfo.goalTargetSpawnChance, 0.4f, 0.5f); //Lerps towards 0.4f spawn chance
         bonusLevel = !bonusLevel && levelInfo.GetAccuracy() == 1f;
+        Border.SetActive(bonusLevel);
+
         nextLevelColorSpawnChance = bonusLevel ? 1 : nextLevelColorSpawnChance;
         reachedNextLevel = true;
         BlowUpEverything();

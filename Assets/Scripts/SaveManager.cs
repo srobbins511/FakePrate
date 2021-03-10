@@ -44,7 +44,6 @@ public class SaveManager : MonoBehaviour
                 saveDetected = true;
                 HighestScore = SavedData.getHighScore(Data);
                 EnergyValue = SavedData.GetEnergyValue(Data);
-                return true;
             }
         }
         else
@@ -53,7 +52,7 @@ public class SaveManager : MonoBehaviour
             Saves = System.IO.Directory.GetFiles(saveDirectory);
         }
         saveDetected = false;
-        return false;
+        return saveDetected;
     }
 
     static private void ReadSaveData(string[] data, int SaveNumber)
